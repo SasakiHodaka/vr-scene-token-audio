@@ -1,4 +1,6 @@
-# 初回調査・移植計画
+# 初回調査・移植計画（mainのみの履歴記録）
+
+**更新:** 全ブランチを調査した最新の結果は[移植実装計画](implementation-plan.md)を参照。以下はmainだけを調査した当初の記録であり、Photon統合ブランチにはVR・Fusion・Voice・ドローンシーンが存在する。新規プロジェクトの採用Unity版は6000.0.58f2へ更新した。
 
 調査日: 2026-10-20。
 対象: https://github.com/SasakiHodaka/xr-peripheral-presence-audio

@@ -6,6 +6,26 @@
 # See: https://github.com/github/gitignore/tree/main/Global
 #
 .utmp/
+
+# Local credentials, Photon settings, research output, and IDE scratch files
+.env
+.env.*
+!.env.example
+**/PhotonAppSettings.asset
+**/PhotonAppSettings.asset.meta
+**/PhotonServerSettings.asset
+**/PhotonServerSettings.asset.meta
+Assets/Resources/LocalSettings/
+Assets/Resources/LocalSettings.meta
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+SceneTokenLogs/
+TestResults/
+*.csproj
+*.sln
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/

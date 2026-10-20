@@ -1,0 +1,6 @@
+{
+  "name": "SceneTokenAudio.EditModeTests",
+  "references": ["SceneTokenAudio"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

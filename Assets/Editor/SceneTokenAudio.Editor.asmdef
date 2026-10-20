@@ -1,0 +1,5 @@
+{
+  "name": "SceneTokenAudio.Editor",
+  "references": ["SceneTokenAudio", "Unity.XR.Management", "Unity.XR.Management.Editor", "Unity.XR.OpenXR"],
+  "includePlatforms": ["Editor"]
+}

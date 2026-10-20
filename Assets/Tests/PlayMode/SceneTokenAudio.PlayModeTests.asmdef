@@ -1,0 +1,5 @@
+{
+  "name": "SceneTokenAudio.PlayModeTests",
+  "references": ["SceneTokenAudio"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

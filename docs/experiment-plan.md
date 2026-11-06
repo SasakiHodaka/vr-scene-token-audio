@@ -1,5 +1,7 @@
 # 動作検証と比較実験
 
+**仕様確定保留：現在は[研究成立条件の検討](research-feasibility.md)を優先する。** C1〜C3の実装・比較条件を固定しない。
+
 現在の主要な研究計画は[Scene Token研究方針](research-plan.md)を参照。C1〜C3による情報構成の比較を中心とする。
 以下は既存の音響制御基盤の検証計画として保持する。Baseline／Always Clear／Adaptiveの比較と、C1〜C3の比較は別のもの。
 

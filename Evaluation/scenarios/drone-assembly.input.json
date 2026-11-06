@@ -1,0 +1,43 @@
+{
+  "schema_version": "scenario-input-0.1",
+  "scenario_id": "drone-assembly-001",
+  "synthetic": true,
+  "duration_s": 10.0,
+  "sample_hz": 20,
+  "entities": [
+    {"id": "A", "kind": "worker"},
+    {"id": "B", "kind": "worker"},
+    {"id": "M1", "kind": "part"},
+    {"id": "Slot1", "kind": "mount"},
+    {"id": "Assembly", "kind": "task"},
+    {"id": "Wiring", "kind": "task"}
+  ],
+  "scenes": [
+    {"id": "S1", "name": "instruction", "start_s": 0.0, "end_exclusive_s": 2.0},
+    {"id": "S2", "name": "grasp-install", "start_s": 2.0, "end_exclusive_s": 9.0},
+    {"id": "S3", "name": "handoff", "start_s": 9.0, "end_inclusive_s": 10.0}
+  ],
+  "initial_observations": {
+    "positions_m": [
+      {"entity_id": "A", "xyz": [0.0, 0.0, 0.0]},
+      {"entity_id": "B", "xyz": [1.0, 0.0, 0.0]},
+      {"entity_id": "M1", "xyz": [1.0, 1.0, 0.0]},
+      {"entity_id": "Slot1", "xyz": [1.0, 1.0, 1.0]}
+    ],
+    "part_states": [{"object_id": "M1", "state": "Free", "holder_id": "not_applicable", "mount_id": "not_applicable"}],
+    "task_states": [
+      {"task_id": "Assembly", "status": "InProgress", "assignee_id": "B", "depends_on": []},
+      {"task_id": "Wiring", "status": "NotStarted", "assignee_id": "B", "depends_on": ["Assembly"], "handoff_acknowledged": false}
+    ]
+  },
+  "events": [
+    {"event_id": "e01", "time_s": 0.0, "kind": "utterance", "speaker_id": "A", "addressee_id": "B", "object_id": "M1", "requested_action": "Install", "text": "Bさん、このモーターを取り付けて", "reference_source": "scenario_annotation"},
+    {"event_id": "e02", "time_s": 2.0, "kind": "operation_started", "operation_id": "op-grasp-1", "action": "Grasp", "actor_id": "B", "object_id": "M1"},
+    {"event_id": "e03", "time_s": 2.2, "kind": "operation_completed", "operation_id": "op-grasp-1", "action": "Grasp", "actor_id": "B", "object_id": "M1", "result": "Succeeded"},
+    {"event_id": "e04", "time_s": 5.0, "kind": "position_observed", "entity_id": "M1", "xyz_m": [1.0, 1.0, 1.0]},
+    {"event_id": "e05", "time_s": 6.0, "kind": "operation_started", "operation_id": "op-install-1", "action": "Install", "actor_id": "B", "object_id": "M1", "mount_id": "Slot1"},
+    {"event_id": "e06", "time_s": 8.0, "kind": "operation_completed", "operation_id": "op-install-1", "action": "Install", "actor_id": "B", "object_id": "M1", "mount_id": "Slot1", "result": "Succeeded", "release_holder": true},
+    {"event_id": "e07", "time_s": 9.0, "kind": "task_status_changed", "task_id": "Assembly", "status": "Completed", "assignee_id": "B"},
+    {"event_id": "e08", "time_s": 10.0, "kind": "handoff_acknowledged", "previous_task_id": "Assembly", "next_task_id": "Wiring", "assignee_id": "B"}
+  ]
+}

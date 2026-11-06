@@ -1,0 +1,44 @@
+{
+  "schema_version": "scenario-expected-0.1",
+  "scenario_id": "drone-assembly-001",
+  "synthetic": true,
+  "authorship": "manually specified from scenario requirements; never a generator input",
+  "tolerances": {"time_s": 0.05, "position_euclidean_m": 0.01},
+  "required_facts": [
+    {"scene_id": "S1", "event_id": "e01", "checks": {"speaker_id": "A", "addressee_id": "B", "object_id": "M1", "requested_action": "Install", "text": "Bさん、このモーターを取り付けて", "time_s": 0.0}},
+    {"scene_id": "S2", "operation_id": "op-grasp-1", "checks": {"actor_id": "B", "object_id": "M1", "action": "Grasp", "started_s": 2.0, "completed_s": 2.2, "result": "Succeeded"}},
+    {"scene_id": "S2", "event_id": "e04", "checks": {"entity_id": "M1", "xyz_m": [1.0, 1.0, 1.0], "time_s": 5.0}},
+    {"scene_id": "S2", "operation_id": "op-install-1", "checks": {"actor_id": "B", "object_id": "M1", "action": "Install", "mount_id": "Slot1", "started_s": 6.0, "completed_s": 8.0, "result": "Succeeded"}},
+    {"scene_id": "S3", "event_id": "e07", "checks": {"task_id": "Assembly", "status": "Completed", "assignee_id": "B", "time_s": 9.0}},
+    {"scene_id": "S3", "event_id": "e08", "checks": {"previous_task_id": "Assembly", "next_task_id": "Wiring", "assignee_id": "B", "time_s": 10.0}}
+  ],
+  "checkpoints": [
+    {"time_s": 0.0, "scene_id": "S1", "entity_id": "M1", "checks": {"state": "Free", "holder_id": "not_applicable", "mount_id": "not_applicable"}},
+    {"time_s": 2.0, "scene_id": "S2", "entity_id": "M1", "checks": {"state": "Grasping", "holder_id": "not_applicable", "mount_id": "not_applicable"}},
+    {"time_s": 2.2, "scene_id": "S2", "entity_id": "M1", "checks": {"state": "Held", "holder_id": "B", "mount_id": "not_applicable"}},
+    {"time_s": 5.0, "scene_id": "S2", "entity_id": "M1", "checks": {"xyz_m": [1.0, 1.0, 1.0], "state": "Held", "holder_id": "B"}},
+    {"time_s": 6.0, "scene_id": "S2", "entity_id": "M1", "checks": {"state": "Installing", "holder_id": "B", "mount_id": "not_applicable"}},
+    {"time_s": 8.0, "scene_id": "S2", "entity_id": "M1", "checks": {"state": "Installed", "holder_id": "not_applicable", "mount_id": "Slot1"}},
+    {"time_s": 8.0, "scene_id": "S2", "entity_id": "Assembly", "checks": {"status": "InProgress"}},
+    {"time_s": 9.0, "scene_id": "S3", "entity_id": "Assembly", "checks": {"status": "Completed", "assignee_id": "B"}},
+    {"time_s": 9.0, "scene_id": "S3", "entity_id": "Wiring", "checks": {"status": "NotStarted", "depends_on": ["Assembly"], "handoff_acknowledged": false, "ready": false}},
+    {"time_s": 10.0, "scene_id": "S3", "entity_id": "Wiring", "checks": {"status": "NotStarted", "assignee_id": "B", "depends_on": ["Assembly"], "handoff_acknowledged": true, "ready": true}}
+  ],
+  "boundary_cases": [
+    {
+      "case_id": "unknown-object",
+      "input": {"time_s": 0.0, "kind": "utterance", "speaker_id": "A", "addressee_id": "B", "text": "Bさん、これを取り付けて", "object_id": "unknown", "requested_action": "Install", "reference_source": "unknown"},
+      "checks": {"object_id": "unknown"}
+    },
+    {
+      "case_id": "failed-install",
+      "input": {"prior_part_state": "Held", "prior_holder_id": "B", "action": "Install", "started_s": 6.0, "completed_s": 8.0, "result": "Failed", "release_holder": false},
+      "checks": {"state": "Held", "holder_id": "B", "mount_id": "not_applicable"}
+    },
+    {
+      "case_id": "incomplete-predecessor",
+      "input": {"predecessor_status": "InProgress", "next_status": "NotStarted", "depends_on": ["Assembly"], "handoff_acknowledged": true},
+      "checks": {"ready": false}
+    }
+  ]
+}

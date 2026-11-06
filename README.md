@@ -33,6 +33,7 @@ NetworkAudioTestはローカルの足場のみです。双方向Photon音声、�
 
 ## 文書
 
+- [関連論文（構成・要求条件・関係表現・音声Token・評価）](docs/related-papers.md)
 - [調査・移植・実装計画](docs/implementation-plan.md)
 - [データ仕様と責務](docs/architecture.md)
 - [試験結果と制約](docs/validation.md)

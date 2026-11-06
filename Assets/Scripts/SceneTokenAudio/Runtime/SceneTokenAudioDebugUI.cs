@@ -14,6 +14,8 @@ namespace SceneTokenAudio
             if (!show || !manager) return;
             GUILayout.BeginArea(new Rect(12, 12, 470, 650), GUI.skin.box);
             GUILayout.Label("Scene Token Audio — local test (desktop controls)");
+            bool observing = GUILayout.Toggle(manager.observationEnabled, "Token observation enabled");
+            if (observing != manager.observationEnabled) manager.SetObservationEnabled(observing);
             foreach (AudioControlMode candidate in System.Enum.GetValues(typeof(AudioControlMode)))
                 if (GUILayout.Toggle(manager.mode == candidate, candidate.ToString(), GUI.skin.button)) manager.mode = candidate;
             bool enabledValue = GUILayout.Toggle(manager.controlEnabled, "Audio control enabled");
@@ -45,7 +47,9 @@ namespace SceneTokenAudio
             GUILayout.Label("Source: " + token.sourceId + " | distance: " + token.distance.ToString("F2") + "m");
             GUILayout.Label($"Direction: ({token.relativeDirection.x:F2}, {token.relativeDirection.y:F2}, {token.relativeDirection.z:F2})");
             GUILayout.Label($"Occlusion: {token.occlusion:F2} | remaining: {token.timeToDeadline:F1}s");
-            GUILayout.Label($"Gain: {manager.LatestParameters.occlusionGain:F3} | LPF: {manager.LatestParameters.lowPassHz:F0}Hz");
+            if (manager.controlEnabled && manager.observationEnabled)
+                GUILayout.Label($"Gain: {manager.LatestParameters.occlusionGain:F3} | LPF: {manager.LatestParameters.lowPassHz:F0}Hz");
+            else GUILayout.Label("Audio control inactive");
             GUILayout.Label($"Processing: {manager.LatestProcessingMs:F3}ms | samples: {manager.SamplesProcessed}");
             if (!string.IsNullOrEmpty(manager.LastError)) GUILayout.Label(manager.LastError);
             if (manager.logger) GUILayout.Label("CSV: " + manager.logger.FilePath + "\nRows: " + manager.logger.RowsWritten);

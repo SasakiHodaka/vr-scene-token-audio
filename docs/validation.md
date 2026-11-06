@@ -1,5 +1,23 @@
 # 実装・検証結果
 
+## 基盤分離の追加検証（2026-11-06）
+
+確認用コピーにてUnity 6000.0.58f2、Windows Editor、batchmode / nographicsで
+`Tools/Run-UnityTests.ps1`を実行。XMLのresult・件数・失敗数を確認した。
+
+|検証|結果|
+|---|---|
+|EditMode|24/24成功|
+|PlayMode|4/4成功|
+|音響制御停止後の観測|位置変更がLatestTokenとCSVに反映され、音響設定は復元されたまま|
+|Rendererなしの観測|音響制御の指定にかかわらずToken生成・CSV記録に成功|
+|観測の停止・再開|停止中はサンプル数が増えず、再開後に生成・記録を継続|
+|CSV互換性|列数・ヘッダーを維持。制御未適用行はObservationOnly、音響関連値は空欄|
+
+テスト出力: `Logs/editmode-results.xml`、`Logs/playmode-results.xml`（Git対象外）。
+既存の音響制御3方式の試験も成功。Quest実機・Photon接続・C1〜C3比較の検証は含まない。
+以下は変更前の検証記録。
+
 実施日: 2026-10-20。Unity 6000.0.58f2、Windows Editor、batchmode / nographics。
 
 ## 結果

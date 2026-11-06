@@ -10,6 +10,60 @@ namespace SceneTokenAudio.Tests
     public sealed class AudioPipelineTests
     {
         [UnityTest]
+        public IEnumerator ObservationLogsWithoutRendererAndCanPauseIndependently()
+        {
+            var listener = new GameObject("Observation listener");
+            var item = new GameObject("Observation source", typeof(AudioSource));
+            var system = new GameObject("Observation system");
+            string path = null;
+            try
+            {
+                var audio = item.GetComponent<AudioSource>();
+                audio.volume = 0.6f;
+                var collector = item.AddComponent<SceneStateCollector>();
+                collector.audioSource = audio;
+                collector.listener = listener.transform;
+                var logger = system.AddComponent<AudioEvaluationLogger>();
+                var manager = system.AddComponent<SceneTokenAudioManager>();
+                manager.sources = new[] { collector };
+                manager.logger = logger;
+                manager.SetControlEnabled(false);
+                manager.Tick();
+                int count = manager.SamplesProcessed;
+                item.transform.position = Vector3.forward * 7f;
+                manager.Tick();
+                Assert.That(manager.SamplesProcessed, Is.EqualTo(count + 1));
+                Assert.That(manager.LatestToken.distance, Is.EqualTo(7f));
+                Assert.That(audio.volume, Is.EqualTo(0.6f));
+                path = logger.FilePath;
+                manager.SetObservationEnabled(false);
+                string[] lines = File.ReadAllLines(path);
+                Assert.That(lines.Length, Is.EqualTo(3));
+                StringAssert.Contains(",ObservationOnly,,,,,,", lines[2]);
+                Assert.That(lines[2].Split(',').Length, Is.EqualTo(AudioEvaluationLogger.Header.Split(',').Length));
+                count = manager.SamplesProcessed;
+                manager.Tick();
+                yield return null;
+                Assert.That(manager.SamplesProcessed, Is.EqualTo(count));
+                manager.SetObservationEnabled(true);
+                // Missing renderer must also permit observation when control is requested.
+                manager.SetControlEnabled(true);
+                manager.Tick();
+                Assert.That(manager.SamplesProcessed, Is.EqualTo(count + 1));
+                manager.SetObservationEnabled(false);
+                File.Delete(path);
+                path = logger.FilePath;
+                Assert.That(File.ReadAllLines(path).Length, Is.EqualTo(2));
+            }
+            finally
+            {
+                Object.DestroyImmediate(system);
+                Object.DestroyImmediate(item);
+                Object.DestroyImmediate(listener);
+                if (path != null && File.Exists(path)) File.Delete(path);
+            }
+        }
+        [UnityTest]
         public IEnumerator AdaptiveSceneRespondsToWallAndPolicySwitches()
         {
             yield return SceneManager.LoadSceneAsync("Assets/Scenes/AdaptiveAudioTest.unity", LoadSceneMode.Additive);
@@ -114,10 +168,18 @@ namespace SceneTokenAudio.Tests
             manager.SetControlEnabled(false);
             Assert.That(audio.volume, Is.EqualTo(0.7f));
             Assert.That(renderer.IsControlling, Is.False);
+            int observed = manager.SamplesProcessed;
+            item.transform.position = Vector3.forward * 9f;
+            manager.Tick();
+            Assert.That(manager.SamplesProcessed, Is.EqualTo(observed + 1));
+            Assert.That(manager.LatestToken.distance, Is.EqualTo(9f));
+            Assert.That(renderer.IsControlling, Is.False);
+            manager.SetObservationEnabled(false);
             string path = logger.FilePath;
             Assert.That(File.Exists(path), Is.True);
             string[] lines = File.ReadAllLines(path);
-            Assert.That(lines.Length, Is.GreaterThan(2));
+            Assert.That(lines.Length, Is.GreaterThanOrEqualTo(2));
+            StringAssert.Contains(",ObservationOnly,", lines[lines.Length - 1]);
             Assert.That(lines[0], Is.EqualTo(AudioEvaluationLogger.Header));
             Object.Destroy(system); Object.Destroy(item); Object.Destroy(listener);
             File.Delete(path); // Only the unique log created by this test.

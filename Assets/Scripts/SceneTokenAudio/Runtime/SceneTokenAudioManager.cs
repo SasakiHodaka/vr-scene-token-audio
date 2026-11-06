@@ -11,6 +11,7 @@ namespace SceneTokenAudio
         public AudioControlMode mode = AudioControlMode.Baseline;
         [Range(1f, 120f)] public float updateHz = 20f;
         public bool controlEnabled = true;
+        public bool observationEnabled = true;
         public SceneToken LatestToken { get; private set; }
         public AudioControlParameters LatestParameters { get; private set; }
         public double LatestProcessingMs { get; private set; }
@@ -33,13 +34,15 @@ namespace SceneTokenAudio
         }
         private void Update()
         {
-            if (!controlEnabled)
+            if (!observationEnabled)
             {
-                if (wasControlling) { RestoreAll(); if (logger) logger.Close(); }
+                RestoreAll();
+                if (logger) logger.Close();
                 wasControlling = false;
                 return;
             }
-            wasControlling = true;
+            if (wasControlling && !controlEnabled) RestoreAll();
+            wasControlling = controlEnabled;
             double now = Time.realtimeSinceStartupAsDouble;
             if (now < nextSample) return;
             // Skip missed ticks instead of producing bursts of stale observations.
@@ -48,7 +51,8 @@ namespace SceneTokenAudio
         }
         public void Tick()
         {
-            if (!controlEnabled || transport == null) return;
+            if (!observationEnabled || transport == null) return;
+            if (!controlEnabled) RestoreAll();
             foreach (var oldSource in routes.Values)
                 if (oldSource && (!oldSource.isActiveAndEnabled || System.Array.IndexOf(sources, oldSource) < 0) && oldSource.rendererAdapter)
                     oldSource.rendererAdapter.Restore();
@@ -81,20 +85,36 @@ namespace SceneTokenAudio
         }
         private void Receive(SceneToken token)
         {
-            if (!routes.TryGetValue(token.sourceId, out var source) || !source.rendererAdapter) return;
-            double controlStart = Milliseconds;
-            AudioControlParameters parameters = Controller.Evaluate(token, mode);
-            double controlMs = Milliseconds - controlStart;
-            if (!source.rendererAdapter.Apply(parameters)) return;
+            if (!routes.TryGetValue(token.sourceId, out var source)) return;
+            AudioControlParameters parameters = default;
+            double controlMs = 0d;
+            bool applied = false;
+            if (controlEnabled && source.rendererAdapter)
+            {
+                double controlStart = Milliseconds;
+                parameters = Controller.Evaluate(token, mode);
+                controlMs = Milliseconds - controlStart;
+                applied = source.rendererAdapter.Apply(parameters);
+            }
             LatestToken = token;
             LatestParameters = parameters;
             LatestProcessingMs = Milliseconds - sampleStart;
             SamplesProcessed++;
-            if (logger) logger.Write(currentState, token, mode, parameters, source.rendererAdapter, collectionMs, controlMs, LatestProcessingMs);
+            if (logger)
+            {
+                if (applied) logger.Write(currentState, token, mode, parameters, source.rendererAdapter, collectionMs, controlMs, LatestProcessingMs);
+                else logger.WriteObservation(currentState, token, collectionMs, LatestProcessingMs);
+            }
         }
         public void SetControlEnabled(bool value)
         {
             controlEnabled = value;
+            if (!value) { RestoreAll(); if (logger) logger.Close(); }
+            nextSample = 0d;
+        }
+        public void SetObservationEnabled(bool value)
+        {
+            observationEnabled = value;
             if (!value) { RestoreAll(); if (logger) logger.Close(); }
             nextSample = 0d;
         }

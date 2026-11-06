@@ -44,7 +44,23 @@ clip、再生/停止、pitch、Transform、spatialize、距離ロールオフ、
 
 CSVはApplication.persistentDataPath/SceneTokenLogsに一意名でUTF-8出力。timestampは単調時刻、ファイル名はUTC。数値はInvariantCulture、IDはCSV引用符をエスケープする。
 raw音源/聞き手位置、8項目のToken、方式、目標gain/LPF、tick時点の適用volume/LPF、collection_ms、control_ms、total_ms、frame_msを記録する。total_msは収集から適用予約まででCSV I/O・次フレームの平滑化・DSP処理時間を含まない。control_msはポリシー計算のみ。
-毎秒flush、停止・無効化・pauseでcloseする。I/O失敗時は記録を停止しLastErrorを出す。制御停止中は観測・ログも停止する。
+毎秒flush、停止・無効化・pauseでcloseする。I/O失敗時は記録を停止しLastErrorを出す。
+
+### 音響制御と観測の分離（2026-11-06）
+
+`observationEnabled`は収集・Token生成・記録の実行を制御する。既定はtrue。
+`controlEnabled`は音響制御だけを制御する。falseでも観測・記録は継続し、適用済みの音響設定は復元する。
+全体を止めるには`SetObservationEnabled(false)`を使用する。再開はtrue。
+`SetControlEnabled(false)`はログを一度closeするため、次の観測から新しいCSVファイルに記録する。
+
+Rendererがない場合、無効な場合、適用に失敗した場合も、有効なTokenは`LatestToken`・`SamplesProcessed`・CSVに反映する。
+制御未適用行は`mode=ObservationOnly`とし、gain・LPF・適用volume・control_msの列は空欄にする。
+既存のCSV列順と8項目のToken形式は維持する。ただしmodeを列挙型として読み込む外部解析ではObservationOnlyへの対応が必要。
+`LatestParameters`は制御未適用時に既定値となるため、有効な音響測定値として使用しない。
+
+Collectorは現段階では位置取得のためAudioSourceとlistenerを必要とする。Rendererと音声再生は不要。
+時刻は単一プロセス内の単調時刻であり、複数端末間の時刻同期は未実装。
+今回の分離はC1〜C3比較の前段階であり、入力ログの再生、独立した正解データ、情報保持率・状態再現・データサイズ・生成単体時間の評価は未実装。
 複数音源では1音源1行。比較に同じ入力が必要な場合はポリシー単体テストまたは固定Token再生を使い、ライブの別時刻を同一入力とみなさない。
 
 ## 音響SDKとXR

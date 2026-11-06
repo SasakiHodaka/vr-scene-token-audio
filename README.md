@@ -33,6 +33,11 @@ NetworkAudioTestはローカルの足場のみです。双方向Photon音声、�
 
 ## 文書
 
+研究方針の変更に向け、音響制御とToken観測を分離しています。
+`SceneTokenAudioManager.controlEnabled=false`でもToken生成・CSV記録を継続でき、Rendererなしでも観測できます。
+観測を停止する場合は`SetObservationEnabled(false)`を使用してください。
+詳細・CSVの扱いは[アーキテクチャ](docs/architecture.md#音響制御と観測の分離2026-11-06)を参照してください。
+
 - [調査・移植・実装計画](docs/implementation-plan.md)
 - [データ仕様と責務](docs/architecture.md)
 - [試験結果と制約](docs/validation.md)

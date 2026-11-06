@@ -20,20 +20,37 @@ namespace SceneTokenAudio
         public static string Escape(string value) => "\"" + (value ?? "").Replace("\"", "\"\"") + "\"";
         private static string Number(double value) => value.ToString("R", Invariant);
         public static string FormatRow(SceneState state, SceneToken token, AudioControlMode mode,
-            AudioControlParameters parameters, float volume, float cutoff, double collectionMs, double controlMs, double totalMs, float frameMs)
+            AudioControlParameters parameters, float volume, float cutoff, double collectionMs, double controlMs, double totalMs, float frameMs,
+            bool observationOnly = false)
         {
             return string.Join(",", new[] {
                 "1", Number(token.timestamp), Escape(token.sourceId),
                 Number(state.sourcePosition.x), Number(state.sourcePosition.y), Number(state.sourcePosition.z),
                 Number(state.listenerPosition.x), Number(state.listenerPosition.y), Number(state.listenerPosition.z),
                 Number(token.distance), Number(token.relativeDirection.x), Number(token.relativeDirection.y), Number(token.relativeDirection.z),
-                Number(token.occlusion), token.taskPhase.ToString(), Number(token.priority), Number(token.timeToDeadline), mode.ToString(),
-                Number(parameters.gainCorrection), Number(parameters.occlusionGain), Number(parameters.lowPassHz), Number(volume), Number(cutoff),
-                Number(collectionMs), Number(controlMs), Number(totalMs), Number(frameMs)
+                Number(token.occlusion), token.taskPhase.ToString(), Number(token.priority), Number(token.timeToDeadline), observationOnly ? "ObservationOnly" : mode.ToString(),
+                observationOnly ? "" : Number(parameters.gainCorrection), observationOnly ? "" : Number(parameters.occlusionGain),
+                observationOnly ? "" : Number(parameters.lowPassHz), observationOnly ? "" : Number(volume), observationOnly ? "" : Number(cutoff),
+                Number(collectionMs), observationOnly ? "" : Number(controlMs), Number(totalMs), Number(frameMs)
             });
         }
         public void Write(SceneState state, SceneToken token, AudioControlMode mode, AudioControlParameters parameters,
             SpatialAudioRendererAdapter renderer, double collectionMs, double controlMs, double totalMs)
+        {
+            WriteRow(FormatRow(state, token, mode, parameters, renderer.AppliedVolume, renderer.AppliedLowPassHz,
+                collectionMs, controlMs, totalMs, Time.unscaledDeltaTime * 1000f));
+        }
+        // Preserve the existing columns. Empty audio columns mean no control was applied.
+        public static string FormatObservationRow(SceneState state, SceneToken token, double collectionMs, double totalMs, float frameMs)
+        {
+            return FormatRow(state, token, AudioControlMode.Baseline, default, 0f, 0f,
+                collectionMs, 0d, totalMs, frameMs, observationOnly: true);
+        }
+        public void WriteObservation(SceneState state, SceneToken token, double collectionMs, double totalMs)
+        {
+            WriteRow(FormatObservationRow(state, token, collectionMs, totalMs, Time.unscaledDeltaTime * 1000f));
+        }
+        private void WriteRow(string row)
         {
             if (!record || !isActiveAndEnabled) { Close(); return; }
             try
@@ -47,8 +64,7 @@ namespace SceneTokenAudio
                     writer.WriteLine(Header);
                     nextFlush = 0d;
                 }
-                writer.WriteLine(FormatRow(state, token, mode, parameters, renderer.AppliedVolume, renderer.AppliedLowPassHz,
-                    collectionMs, controlMs, totalMs, Time.unscaledDeltaTime * 1000f));
+                writer.WriteLine(row);
                 RowsWritten++;
                 if (Time.realtimeSinceStartupAsDouble >= nextFlush)
                 {

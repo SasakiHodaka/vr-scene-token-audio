@@ -1,0 +1,17 @@
+﻿{
+    "verification_scope":  "Editor SDK callback binding and synthetic callback tests; no human VR assembly trace",
+    "unity_version":  "6000.0.58f2",
+    "source_project":  "fusion-vr-training-2.0.6",
+    "scene":  "Assets/Training/Scene/Drone Training Capture.unity",
+    "original_scene_sha256":  "5DAB83647B540D224FB878CCA2D811677F5B7FA7E5261A34EAFCDAB2A55C0B93",
+    "placed_network_grabbables":  2,
+    "initial_attachment_points":  0,
+    "initial_activity_trackers":  0,
+    "verified_callback_subscriptions":  4,
+    "research_editmode_passed":  33,
+    "research_playmode_passed":  6,
+    "drone_capture_playmode_passed":  2,
+    "human_operation_log_acquired":  false,
+    "dynamic_session_binding_verified":  false,
+    "sdk_install_or_new_network_authentication_performed":  false
+}

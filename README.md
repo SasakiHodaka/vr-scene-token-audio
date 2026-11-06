@@ -1,6 +1,10 @@
 # vr-scene-token-audio
 
-VR遠隔協調作業の空間・作業・時間情報をScene Tokenに構造化し、音響制御へ利用する研究用Unityプロジェクトです。
+VR遠隔協調作業の発話・空間・操作・作業状況をScene Tokenとしてどう構成するかを検討する研究用Unityプロジェクトです。既存の8項目の音響Tokenと、意味関係の取得・送受信基盤を含みます。新規性・最終仕様は未確定です。
+
+**次回の入口：[次回はここから](START_HERE.md)**。現在の優先作業はドローン組立の実操作ログ取得と照合です。
+
+実操作用のFusionドローンプロジェクトと、この研究リポジトリは別です。開く場所は入口の表を参照してください。
 
 ## 開発環境
 
@@ -9,7 +13,7 @@ VR遠隔協調作業の空間・作業・時間情報をScene Tokenに構造化�
 - 対象デバイス: Meta Quest 3。現在の音響RendererはUnity標準3D AudioSource
 - Photon Fusion / VoiceとMeta XR Audio SDKは新規プロジェクトには未導入。既存ブランチを調査し、接続境界を設計しています
 
-## セットアップ
+## 音響基盤単体のセットアップ
 
 1. このリポジトリをcloneし、Unity Hubから6000.0.58f2で開きます。Packagesを復元します。
 2. Assets/Scenes/AdaptiveAudioTest.unityを開いてPlayします。シーンがない場合は`Tools > Scene Token Audio > Create Test Scenes`で生成します（現在の編集シーンの保存確認があります）。
@@ -33,6 +37,8 @@ NetworkAudioTestはローカルの足場のみです。双方向Photon音声、�
 
 ## 文書
 
+- [現在の進捗と再開メモ](docs/session-handoff.md)
+- [資料の読み順・現行資料と過去の検討記録](docs/README.md)
 - [ドローン組立への接続・実操作でのCSV取得手順](docs/drone-capture.md)
 - [意味関係の最小実装・実行手順・予備評価](docs/relation-probe.md)
 - [研究成立条件の検討書（現在の優先事項・仕様確定保留）](docs/research-feasibility.md)
@@ -45,4 +51,4 @@ NetworkAudioTestはローカルの足場のみです。双方向Photon音声、�
 - [比較実験計画](docs/experiment-plan.md)
 - [Phase 5 Photon接続設計案](docs/photon-integration.md)
 
-既存プロジェクトは変更しません。必要な役割を新設し、既存のSDK・素材・App ID・学習モデル・ビルド生成物は一括コピーしません。SDKを別途導入する場合は配布元ライセンスを確認してください。
+実ドローンプロジェクトには専用モジュールと検証用シーンを追加し、元のシーン・SDKコード・元Prefabは変更しません。SDK・素材・App ID・学習モデル・ビルド生成物をこの研究リポジトリへ一括コピーしません。

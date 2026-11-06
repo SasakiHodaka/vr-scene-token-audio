@@ -17,6 +17,9 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/NetworkAudioTest.unity
     guid: 291e5784c69fdbd408a4844b86648da6
+  - enabled: 1
+    path: Assets/Scenes/RelationProbe.unity
+    guid: 96fab45af4650e344ae8bc52010d4e47
   m_configObjects:
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: e97c5c68a50503743a7873f5a02f6005, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: c6c46adb03a917349b43f1f9c11ffb3f, type: 2}

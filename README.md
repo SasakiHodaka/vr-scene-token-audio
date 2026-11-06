@@ -33,6 +33,7 @@ NetworkAudioTestはローカルの足場のみです。双方向Photon音声、�
 
 ## 文書
 
+- [意味関係の最小実装・実行手順・予備評価](docs/relation-probe.md)
 - [研究成立条件の検討書（現在の優先事項・仕様確定保留）](docs/research-feasibility.md)
 - [ドローン組立3場面の要求条件・正解仕様とシナリオJSON](docs/scenario-spec.md)
 - [研究方針・要求条件・C1〜C3・評価・マイルストーン](docs/research-plan.md)

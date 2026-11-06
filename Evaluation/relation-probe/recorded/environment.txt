@@ -1,0 +1,10 @@
+Synthetic S4/S5 loopback probe; not human data or network latency.
+Unity=6000.0.58f2
+OS=Windows 11  (10.0.26200) 64bit
+CPU=Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz
+Warmups=3 per configuration; repetitions=20 on the SAME trace, not 20 independent scenarios.
+Budget applies per frame. Full is unbudgeted reference; over_budget_frames makes violations explicit.
+Bytes include complete UTF-8 envelopes; no transport headers. No history fetches or loss model.
+Latency columns measure encode/reduction and decode/reconstruction CPU for all five frames, not network update delay.
+Priority is an input annotation, not a trained selector. RankedItems is not Park & Yoon replication.
+GenericClosed and TokenClosed intentionally identical. Representation overhead is not a new semantic principle.

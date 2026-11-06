@@ -1,0 +1,20 @@
+{
+  "frames": [
+    {"sessionId":"S4-S5","availableAt":1.0,"relations":[
+      {"id":"Q1","utteranceId":"U1","actorId":"A","kind":"pointing_candidates","status":"insufficient","observedAt":1.0,"revision":0,"values":[],"priority":1.0}
+    ]},
+    {"sessionId":"S4-S5","availableAt":1.2,"relations":[
+      {"id":"Q2","utteranceId":"U1","actorId":"A","kind":"pointing_candidates","status":"evaluated","observedAt":1.2,"revision":0,"values":["M1","M2"],"priority":1.0},
+      {"id":"O1","utteranceId":"not_applicable","actorId":"B","kind":"operation:Grasp:Started","status":"evaluated","observedAt":1.2,"revision":0,"values":["M2"],"priority":0.5}
+    ]},
+    {"sessionId":"S4-S5","availableAt":1.4,"relations":[
+      {"id":"Q3","utteranceId":"U1","actorId":"A","kind":"pointing_candidates","status":"evaluated","observedAt":1.4,"revision":0,"values":["M1"],"priority":1.0}
+    ]},
+    {"sessionId":"S4-S5","availableAt":1.6,"relations":[
+      {"id":"Q4","utteranceId":"U2","actorId":"B","kind":"pointing_candidates","status":"evaluated","observedAt":1.6,"revision":0,"values":[],"priority":1.0}
+    ]},
+    {"sessionId":"S4-S5","availableAt":1.8,"relations":[
+      {"id":"Q2","utteranceId":"U1","actorId":"A","kind":"pointing_candidates","status":"evaluated","observedAt":1.2,"revision":1,"values":["M2"],"priority":1.0}
+    ]}
+  ]
+}

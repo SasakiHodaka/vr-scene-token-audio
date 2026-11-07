@@ -5,6 +5,7 @@
 | 資料 | 位置付け |
 |---|---|
 | [session-handoff.md](session-handoff.md) | 現在の作業状態・未検証事項・作業フォルダー・バックアップ |
+| [next-session.md](next-session.md) | 次回の作業カード、実機の有無による分岐、成功条件、再開文 |
 | [drone-capture.md](drone-capture.md) | 実ドローンプロジェクトでCSVを取る手順とイベントの意味 |
 | [capture-audit.md](capture-audit.md) | 取得後のファイル整合性検査・独立注釈。実操作の証明と区別する |
 | [submission-milestones.md](submission-milestones.md) | 12月4日の概要提出・12月12日の発表までの到達目標 |

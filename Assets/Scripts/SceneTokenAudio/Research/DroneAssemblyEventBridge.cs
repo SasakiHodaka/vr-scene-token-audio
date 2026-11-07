@@ -21,6 +21,7 @@ namespace SceneTokenAudio.Research
         private readonly HashSet<string> attachedPairs = new HashSet<string>();
         private string lastActor = "unknown", attempt = "not_applicable", lastActivity;
         private string lastActorAudio = "unknown";
+        private string releaseActorEvidence = "no_confirmed_grabber";
         private int attemptNumber;
 
         private void Start() => Bind();
@@ -42,17 +43,46 @@ namespace SceneTokenAudio.Research
                     ListenArgument(Read(networkGrabbable, "onDidGrab"), OnGrab);
                     Listen(Read(networkGrabbable, "onDidUngrab"), OnRelease);
                 }
+                var uniquePoints = new HashSet<Component>();
                 foreach (var point in attachmentPoints ?? new Component[0])
                 {
-                    if (!point) continue;
-                    var captured = point;
-                    Listen(Read(point, "onRegisterAttachment"), () => OnAttachment(captured, true));
-                    Listen(Read(point, "onRegisterReverseAttachment"), () => OnAttachment(captured, true));
-                    Listen(Read(point, "onUnregisterAttachment"), () => OnAttachment(captured, false));
-                    Listen(Read(point, "onUnregisterReverseAttachment"), () => OnAttachment(captured, false));
+                    if (point && uniquePoints.Add(point)) ListenPoint(point);
                 }
             }
             catch (Exception e) { LastError = e.Message; Unbind(); }
+        }
+
+        private void ListenPoint(Component point)
+        {
+            Listen(Read(point, "onRegisterAttachment"), () => OnAttachment(point, true));
+            Listen(Read(point, "onRegisterReverseAttachment"), () => OnAttachment(point, true));
+            Listen(Read(point, "onUnregisterAttachment"), () => OnAttachment(point, false));
+            Listen(Read(point, "onUnregisterReverseAttachment"), () => OnAttachment(point, false));
+        }
+
+        // Runtime-spawned points may appear after their owning part was bound.
+        // Add only new subscriptions: rebinding the whole part would interrupt existing callbacks
+        // and repeating CaptureInitialState would fabricate additional grab snapshots.
+        public void RefreshAttachmentPoints(Component[] candidates)
+        {
+            var points = new List<Component>(attachmentPoints ?? new Component[0]);
+            foreach (var point in candidates ?? new Component[0])
+            {
+                if (!point || points.Contains(point)) continue;
+                int previousCount = unsubscribe.Count;
+                try { ListenPoint(point); }
+                catch (Exception e)
+                {
+                    for (int i = unsubscribe.Count - 1; i >= previousCount; i--)
+                    { unsubscribe[i](); unsubscribe.RemoveAt(i); Subscriptions--; }
+                    LastError = "Attachment binding unavailable: " + e.Message;
+                    return;
+                }
+                points.Add(point);
+                attachmentPoints = points.ToArray();
+                LastError = null;
+                CaptureAttachmentState(point);
+            }
         }
 
         public static object Read(object source, string member)
@@ -101,7 +131,7 @@ namespace SceneTokenAudio.Research
             // A new confirmed grab is an episode, NOT proof of an install retry.
             var component = grabber as Component;
             lastActor = Identity(component);
-            string actorEvidence = "grabber_callback_identity";
+            string actorEvidence = initial ? "initial_grabber_identity" : "grabber_callback_identity";
             if (lastActor == "unknown" && component)
             {
                 object owner = Read(Read(component, "Object"), "StateAuthority");
@@ -121,12 +151,13 @@ namespace SceneTokenAudio.Research
                         { lastActorAudio = recorder.RegisterActorPose(lastActor, child.transform); break; }
             }
             attempt = initial ? "unknown" : partIdentity.entityId + "/grab-episode/" + (++attemptNumber);
+            releaseActorEvidence = initial ? "previous_grabber_snapshot" : "previous_confirmed_grabber";
             Emit(initial ? "grab_snapshot" : "grab_confirmed", lastActor, actorEvidence, "not_applicable",
                 initial ? "network_grabbable.initial_state" : "network_grabbable.onDidGrab");
         }
 
         private void OnRelease()
-            => Emit("release_observed", lastActor, "previous_confirmed_grabber", "not_applicable", "network_grabbable.onDidUngrab");
+            => Emit("release_observed", lastActor, releaseActorEvidence, "not_applicable", "network_grabbable.onDidUngrab");
 
         private void OnAttachment(Component point, bool register, bool snapshot = false)
         {
@@ -181,8 +212,13 @@ namespace SceneTokenAudio.Research
             if (networkGrabbable && Read(networkGrabbable, "IsGrabbed") is bool grabbed && grabbed)
                 CaptureGrab(Read(networkGrabbable, "CurrentGrabber"), true);
             foreach (var point in attachmentPoints ?? new Component[0])
-                if (point && Read(point, "RelatedPoint") is Component relatedPoint && relatedPoint)
-                    OnAttachment(point, true, true);
+                CaptureAttachmentState(point);
+        }
+
+        private void CaptureAttachmentState(Component point)
+        {
+            if (point && Read(point, "RelatedPoint") is Component relatedPoint && relatedPoint)
+                OnAttachment(point, true, true);
         }
     }
 }

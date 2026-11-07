@@ -9,8 +9,11 @@
     "initial_activity_trackers":  0,
     "verified_callback_subscriptions":  4,
     "research_editmode_passed":  33,
-    "research_playmode_passed":  6,
-    "drone_capture_playmode_passed":  2,
+    "research_playmode_passed":  9,
+    "drone_capture_playmode_passed":  5,
+    "offline_audit_python_tests_passed":  7,
+    "late_attachment_subscription_synthetic_test_passed":  true,
+    "snapshot_actor_evidence_synthetic_test_passed":  true,
     "human_operation_log_acquired":  false,
     "dynamic_session_binding_verified":  false,
     "sdk_install_or_new_network_authentication_performed":  false

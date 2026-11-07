@@ -1,5 +1,20 @@
 # 実装・検証結果
 
+## 研究室外での取得準備・修正
+
+ユーザー指定の作業基準日は11月9日。実行環境の時計・XMLは2026-11-07を示すため、予定日と実行タイムスタンプを混同しない。
+
+- 研究側：EditMode 33/33、PlayMode 9/9成功。最終版の`Logs/editmode-results.xml`と`Logs/playmode-results.xml`でPassed・failed=0を確認。
+- 移植先：記録処理のPlayMode 5/5成功。`fusion-vr-training-2.0.6/Logs/assembly-capture/playmode-results.xml`でPassed・failed=0を確認。
+- Python：`python -m unittest discover -s Tools/tests -v`で7/7成功。CSV契約と実際のC#ヘッダーの一致、複数音源とイベント数の区別、欠測、重複、破損、非有限数、参照不一致、入力不変・注釈上書き防止を検証。
+- 後から生成された取付点の追加購読、購読途中の失敗からの巻き戻し・再試行、既存把持購読の維持、初期把持由来の解放根拠を人工コールバックで確認。
+- インストーラーは元シーンのハッシュ照合をコピー前に実施するよう変更。移植を実行し、Runtime/Editorの一致と元シーンのハッシュ一致を再確認。
+- 元シーンSHA256：`5DAB83647B540D224FB878CCA2D811677F5B7FA7E5261A34EAFCDAB2A55C0B93`。
+
+初回Unityは制限環境でライセンス取得に失敗し、通常環境で再実行した。実SDKを含む移植先でのコンパイル・人工通知テストは成功したが、実際のSDKイベント発生、実セッション内の動的生成、QuestのAOT・ストリッピング、実操作精度は未確認。Unityテストの通知を人間の操作ログに使用していない。既定保存先のCSVは再確認時も0件。
+
+検査・注釈の手順は[capture-audit.md](capture-audit.md)。新しい構成比較の測定や優位性の実証は今回実施していない。
+
 ## ドローン組立の記録処理
 
 [接続・CSV取得手順](drone-capture.md)と[検証範囲の記録](../Evaluation/assembly-capture/verification.json)を参照。

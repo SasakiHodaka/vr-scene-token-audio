@@ -6,6 +6,9 @@
 |---|---|
 | [session-handoff.md](session-handoff.md) | 現在の作業状態・未検証事項・作業フォルダー・バックアップ |
 | [drone-capture.md](drone-capture.md) | 実ドローンプロジェクトでCSVを取る手順とイベントの意味 |
+| [capture-audit.md](capture-audit.md) | 取得後のファイル整合性検査・独立注釈。実操作の証明と区別する |
+| [submission-milestones.md](submission-milestones.md) | 12月4日の概要提出・12月12日の発表までの到達目標 |
+| [abstract-draft.md](abstract-draft.md) | 実機評価前の概要下書き。測定後に結果・考察を更新する |
 | [relation-probe.md](relation-probe.md) | 最小送受信実装と人工入力による予備評価。優位性の証明ではない |
 | [validation.md](validation.md) | 検証記録。追加検証を上に掲載。古い件数・未実装記述は当時の状態 |
 | [related-papers.md](related-papers.md) | 文献一覧。列挙だけで新規性を認めた資料ではない |

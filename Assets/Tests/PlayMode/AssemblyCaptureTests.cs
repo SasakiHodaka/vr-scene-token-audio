@@ -12,6 +12,8 @@ namespace SceneTokenAudio.Tests
 {
     public sealed class CaptureTestGrabbable : MonoBehaviour
     {
+        public bool IsGrabbed;
+        public Component CurrentGrabber;
         public UnityEvent<Component> onDidGrab = new UnityEvent<Component>();
         public UnityEvent onDidUngrab = new UnityEvent();
     }
@@ -27,6 +29,116 @@ namespace SceneTokenAudio.Tests
 
     public sealed class AssemblyCaptureTests
     {
+        [Test]
+        public void LateAttachmentPointsAreSubscribedOnceWithoutInterruptingGrabEvents()
+        {
+            var root = new GameObject("Late capture test");
+            var other = new GameObject("Late mount");
+            string directory = null;
+            try
+            {
+                var recorder = root.AddComponent<AssemblyCaptureRecorder>();
+                var identity = root.AddComponent<ResearchEntityIdentity>(); identity.entityId = "M1";
+                var callbacks = root.AddComponent<CaptureTestGrabbable>();
+                var bridge = root.AddComponent<DroneAssemblyEventBridge>();
+                bridge.recorder = recorder; bridge.partIdentity = identity; bridge.networkGrabbable = callbacks;
+                bridge.Bind();
+                Assert.That(bridge.Subscriptions, Is.EqualTo(2));
+                other.AddComponent<ResearchEntityIdentity>().entityId = "Slot1";
+                var point = root.AddComponent<CaptureTestAttachment>();
+                point.RelatedPoint = other.transform;
+                bridge.RefreshAttachmentPoints(new Component[] { point, point });
+                Assert.That(bridge.Subscriptions, Is.EqualTo(6));
+                Assert.That(recorder.RecordsWritten, Is.EqualTo(1), "Late existing attachment is one snapshot");
+                directory = recorder.DirectoryPath;
+                bridge.RefreshAttachmentPoints(new Component[] { point });
+                Assert.That(bridge.Subscriptions, Is.EqualTo(6));
+                Assert.That(recorder.RecordsWritten, Is.EqualTo(1));
+                point.onUnregisterAttachment.Invoke();
+                callbacks.onDidGrab.Invoke(other.transform);
+                callbacks.onDidUngrab.Invoke();
+                recorder.Close();
+                var observations = File.ReadAllLines(Path.Combine(directory, "observations.ndjson"))
+                    .Select(json => JsonUtility.FromJson<AssemblyObservation>(json)).ToArray();
+                Assert.That(observations.Select(o => o.eventKind), Is.EqualTo(new[] {
+                    "attachment_snapshot", "attachment_unregistered", "grab_confirmed", "release_observed" }));
+                bridge.Unbind();
+                point.onRegisterAttachment.Invoke();
+                Assert.That(recorder.RecordsWritten, Is.EqualTo(4));
+            }
+            finally
+            {
+                Object.DestroyImmediate(root); Object.DestroyImmediate(other);
+                DeleteCapture(directory);
+            }
+        }
+
+        [Test]
+        public void InvalidLatePointRollsBackItsSubscriptionsAndKeepsExistingGrabBinding()
+        {
+            var root = new GameObject("Partial subscription test");
+            string directory = null;
+            try
+            {
+                var recorder = root.AddComponent<AssemblyCaptureRecorder>();
+                var identity = root.AddComponent<ResearchEntityIdentity>(); identity.entityId = "M1";
+                var callbacks = root.AddComponent<CaptureTestGrabbable>();
+                var bridge = root.AddComponent<DroneAssemblyEventBridge>();
+                bridge.recorder = recorder; bridge.partIdentity = identity; bridge.networkGrabbable = callbacks;
+                bridge.Bind();
+                var point = root.AddComponent<CaptureTestAttachment>();
+                point.onRegisterReverseAttachment = null;
+                bridge.RefreshAttachmentPoints(new Component[] { point });
+                Assert.That(bridge.LastError, Is.Not.Empty);
+                Assert.That(bridge.Subscriptions, Is.EqualTo(2));
+                point.onRegisterAttachment.Invoke();
+                Assert.That(recorder.RecordsWritten, Is.Zero);
+                callbacks.onDidUngrab.Invoke();
+                directory = recorder.DirectoryPath;
+                Assert.That(recorder.RecordsWritten, Is.EqualTo(1));
+                point.onRegisterReverseAttachment = new UnityEvent();
+                bridge.RefreshAttachmentPoints(new Component[] { point });
+                Assert.That(bridge.LastError, Is.Null);
+                Assert.That(bridge.Subscriptions, Is.EqualTo(6));
+            }
+            finally { Object.DestroyImmediate(root); DeleteCapture(directory); }
+        }
+
+        [Test]
+        public void InitialGrabSnapshotDoesNotClaimAConfirmedGrabCallback()
+        {
+            var root = new GameObject("Snapshot provenance test");
+            var actor = new GameObject("Snapshot actor");
+            string directory = null;
+            try
+            {
+                var recorder = root.AddComponent<AssemblyCaptureRecorder>();
+                var identity = root.AddComponent<ResearchEntityIdentity>(); identity.entityId = "M1";
+                actor.AddComponent<ResearchEntityIdentity>().entityId = "B";
+                var callbacks = root.AddComponent<CaptureTestGrabbable>();
+                callbacks.IsGrabbed = true; callbacks.CurrentGrabber = actor.transform;
+                var bridge = root.AddComponent<DroneAssemblyEventBridge>();
+                bridge.recorder = recorder; bridge.partIdentity = identity; bridge.networkGrabbable = callbacks;
+                bridge.Bind(); bridge.CaptureInitialState(); callbacks.onDidUngrab.Invoke();
+                directory = recorder.DirectoryPath;
+                recorder.Close();
+                var observations = File.ReadAllLines(Path.Combine(directory, "observations.ndjson"))
+                    .Select(json => JsonUtility.FromJson<AssemblyObservation>(json)).ToArray();
+                Assert.That(observations[0].eventKind, Is.EqualTo("grab_snapshot"));
+                Assert.That(observations[0].actorEvidence, Is.EqualTo("initial_grabber_identity"));
+                Assert.That(observations[1].actorEvidence, Is.EqualTo("previous_grabber_snapshot"));
+            }
+            finally { Object.DestroyImmediate(root); Object.DestroyImmediate(actor); DeleteCapture(directory); }
+        }
+
+        private static void DeleteCapture(string directory)
+        {
+            if (directory == null) return;
+            foreach (string file in new[] { "observations.ndjson", "sender-frames.ndjson", "events-audio.csv", "capture-info.json" })
+                File.Delete(Path.Combine(directory, file));
+            Directory.Delete(directory);
+        }
+
         [UnityTest]
         public IEnumerator CallbacksWriteCsvWithAudioAndNeverInferFailedInstall()
         {

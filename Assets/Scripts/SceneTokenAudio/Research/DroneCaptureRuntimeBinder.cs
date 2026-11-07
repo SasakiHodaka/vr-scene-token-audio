@@ -58,9 +58,17 @@ namespace SceneTokenAudio.Research
             {
                 bool part = IsType(component, "Fusion.XR.Shared.Grabbing.NetworkGrabbable");
                 bool activity = IsType(component, "Fusion.Addons.Learning.LearnerActivityTracker");
-                if ((!part && !activity) || bound.Contains(component) || !Spawned(component)) continue;
+                if ((!part && !activity) || !Spawned(component)) continue;
                 var bridge = component.GetComponents<DroneAssemblyEventBridge>().FirstOrDefault(b =>
                     part ? b.networkGrabbable == component : b.activityTracker == component);
+                var points = part ? components.Where(p => IsType(p, "Fusion.Addons.StructureCohesion.AttachmentPoint") && Spawned(p) &&
+                    p.GetComponentsInParent<Component>().FirstOrDefault(owner => IsType(owner, "Fusion.XR.Shared.Grabbing.NetworkGrabbable")) == component).ToArray()
+                    : Array.Empty<Component>();
+                if (bound.Contains(component) && bridge)
+                {
+                    if (part) bridge.RefreshAttachmentPoints(points);
+                    continue;
+                }
                 if (!bridge)
                 {
                     bridge = component.gameObject.AddComponent<DroneAssemblyEventBridge>();
@@ -68,13 +76,13 @@ namespace SceneTokenAudio.Research
                     if (part)
                     {
                         bridge.networkGrabbable = component;
-                        bridge.attachmentPoints = components.Where(p => IsType(p, "Fusion.Addons.StructureCohesion.AttachmentPoint") &&
-                            p.GetComponentsInParent<Component>().FirstOrDefault(owner => IsType(owner, "Fusion.XR.Shared.Grabbing.NetworkGrabbable")) == component).ToArray();
+                        bridge.attachmentPoints = points;
                     }
                     else bridge.activityTracker = component;
                 }
                 bridge.Bind();
                 if (!string.IsNullOrEmpty(bridge.LastError)) continue;
+                if (part) bridge.RefreshAttachmentPoints(points);
                 bridge.CaptureInitialState();
                 bound.Add(component);
                 if (part) BoundParts++; else BoundActivities++;

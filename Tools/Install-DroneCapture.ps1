@@ -10,6 +10,12 @@ $captureTarget = Join-Path $captureTargetRoot 'Assets\SceneTokenResearchIntegrat
 if ((Test-Path -LiteralPath $captureTarget) -and -not (Test-Path -LiteralPath (Join-Path $captureTarget 'installed-by-scene-token.txt'))) {
     throw 'Integration folder exists without installer marker; refusing to overwrite'
 }
+$captureOriginalHash = (Get-FileHash -LiteralPath $captureOriginalScene -Algorithm SHA256).Hash
+$captureHashPath = Join-Path $captureTarget 'original-scene.sha256.txt'
+if ((Test-Path -LiteralPath $captureHashPath) -and
+    (Get-Content -Raw -LiteralPath $captureHashPath).Trim() -ne $captureOriginalHash) {
+    throw 'Original scene changed since first install; inspect before continuing'
+}
 New-Item -ItemType Directory -Path $captureTarget -Force | Out-Null
 Set-Content -LiteralPath (Join-Path $captureTarget 'installed-by-scene-token.txt') -Value 'Research capture module. Original SDK and original scene are not replaced.' -Encoding UTF8
 $captureRuntime = Join-Path $captureTarget 'Runtime'
@@ -24,12 +30,8 @@ $captureTests = Join-Path $captureTarget 'Tests\PlayMode'
 New-Item -ItemType Directory -Path $captureTests -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $captureSourceRoot 'Assets\Tests\PlayMode\AssemblyCaptureTests.cs') -Destination $captureTests -Force
 Set-Content -LiteralPath (Join-Path $captureTests 'SceneTokenAssemblyCapture.Tests.asmdef') -Encoding UTF8 -Value '{"name":"SceneTokenAssemblyCapture.Tests","references":["SceneTokenAudio"],"optionalUnityReferences":["TestAssemblies"]}'
-$captureOriginalHash = (Get-FileHash -LiteralPath $captureOriginalScene -Algorithm SHA256).Hash
-$captureHashPath = Join-Path $captureTarget 'original-scene.sha256.txt'
-if (Test-Path -LiteralPath $captureHashPath) {
-    if ((Get-Content -Raw -LiteralPath $captureHashPath).Trim() -ne $captureOriginalHash) {
-        throw 'Original scene changed since first install; inspect before continuing'
-    }
-} else { Set-Content -LiteralPath $captureHashPath -Encoding UTF8 -Value $captureOriginalHash }
+if (-not (Test-Path -LiteralPath $captureHashPath)) {
+    Set-Content -LiteralPath $captureHashPath -Encoding UTF8 -Value $captureOriginalHash
+}
 Write-Output "Installed research module: $captureTarget"
 Write-Output "Original scene SHA256: $captureOriginalHash"

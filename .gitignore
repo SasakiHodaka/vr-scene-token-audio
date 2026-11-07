@@ -6,6 +6,8 @@
 # See: https://github.com/github/gitignore/tree/main/Global
 #
 .utmp/
+__pycache__/
+*.py[cod]
 
 # Local credentials, Photon settings, research output, and IDE scratch files
 .env

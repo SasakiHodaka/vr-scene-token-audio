@@ -6,6 +6,8 @@ VR遠隔協調作業の発話・空間・操作・作業状況をScene Tokenと�
 
 実操作用のFusionドローンプロジェクトと、この研究リポジトリは別です。開く場所は入口の表を参照してください。
 
+研究室外での準備として、取付点の追加購読修正、[ログ検査と独立注釈](docs/capture-audit.md)、[提出までの予定](docs/submission-milestones.md)、[概要の下書き](docs/abstract-draft.md)を用意しました。検証は研究側EditMode 33件・PlayMode 9件、移植先の記録テスト5件、Python 7件が成功。実操作ログの取得と構成比較はこれからです。
+
 ## 開発環境
 
 - Unity **6000.0.58f2**（Photon統合元ブランチと同じ版）
